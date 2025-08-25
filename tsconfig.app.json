@@ -23,5 +23,11 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "../backend/src/config",
+    "../backend/src/middlewares",
+    "../backend/src/models",
+    "../backend/src/controllers"
+  ]
 }
