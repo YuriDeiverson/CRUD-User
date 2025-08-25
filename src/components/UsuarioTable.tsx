@@ -4,10 +4,9 @@ import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 interface Props {
   usuarios: Usuario[];
   onEditar: (usuario: Usuario) => void;
-  onDeletar: (id?: number) => void;
+  onDeletar: (id?: string) => void; // <--- aqui muda para string
 }
 
-// Usamos "export function" para uma exportação nomeada
 export function UsuarioTable({ usuarios, onEditar, onDeletar }: Props) {
   return (
     <div className="overflow-x-auto bg-white rounded-xl shadow-lg">
@@ -22,7 +21,7 @@ export function UsuarioTable({ usuarios, onEditar, onDeletar }: Props) {
         </thead>
         <tbody className="divide-y divide-slate-200">
           {usuarios.length > 0 ? usuarios.map((u) => (
-            <tr key={u.id} className="hover:bg-slate-50 transition-colors duration-200">
+            <tr key={u._id} className="hover:bg-slate-50 transition-colors duration-200">
               <td className="p-4 whitespace-nowrap">
                 <div className="font-medium text-slate-800">{u.nome}</div>
               </td>
@@ -43,7 +42,7 @@ export function UsuarioTable({ usuarios, onEditar, onDeletar }: Props) {
                 </button>
                 <button 
                   className="text-slate-500 hover:text-red-600 transition-colors" 
-                  onClick={() => onDeletar(u.id)}
+                  onClick={() => onDeletar(u._id)}
                   title="Remover"
                 >
                   <TrashIcon className="h-5 w-5" />

@@ -1,10 +1,7 @@
-// frontend/src/pages/UsuariosPage.tsx
-
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { Modal } from '../components/Modal';
 import { UsuarioForm } from '../components/UsuarioForm';
-// CORRIGIDO: Agora a importar o UsuarioTable do seu próprio ficheiro com a sintaxe correta
 import { UsuarioTable } from '../components/UsuarioTable';
 import type { Usuario } from '../types/Usuario';
 import { PlusIcon } from '@heroicons/react/24/solid';
@@ -28,9 +25,9 @@ function UsuariosPage() {
     carregarUsuarios();
   }, [page, filter]);
 
-  const handleSaveUser = (novoUsuario: Omit<Usuario, 'id' | 'data_criacao'>, id?: number) => {
-    const promise = id
-      ? api.put(`/usuarios/${id}`, novoUsuario)
+  const handleSaveUser = (novoUsuario: Omit<Usuario, '_id' | 'data_criacao'>, _id?: string) => {
+    const promise = _id
+      ? api.put(`/usuarios/${_id}`, novoUsuario)
       : api.post('/usuarios/register', novoUsuario);
 
     promise.then(() => {
@@ -46,9 +43,9 @@ function UsuariosPage() {
     setIsModalOpen(true);
   };
   
-  const handleDelete = (id?: number) => {
-    if (id && window.confirm('Tem certeza que deseja remover este usuário? Esta ação é irreversível.')) {
-      api.delete(`/usuarios/${id}`).then(() => {
+  const handleDelete = (_id?: string) => {
+    if (_id && window.confirm('Tem certeza que deseja remover este usuário? Esta ação é irreversível.')) {
+      api.delete(`/usuarios/${_id}`).then(() => {
         carregarUsuarios();
       });
     }

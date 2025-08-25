@@ -1,5 +1,3 @@
-// frontend/src/components/UsuarioForm.tsx
-
 import { useState, useEffect, type InputHTMLAttributes } from "react";
 import type { Usuario } from "../types/Usuario";
 import { CheckIcon, ArrowUturnLeftIcon } from '@heroicons/react/24/solid';
@@ -25,7 +23,7 @@ function FormField({ label, id, ...props }: FormFieldProps) {
 }
 
 interface Props {
-  onSave: (usuario: Omit<Usuario, "id" | "data_criacao" | "senha"> & { senha?: string }, id?: number) => void;
+  onSave: (usuario: Omit<Usuario, "_id" | "data_criacao" | "senha"> & { senha?: string }, _id?: string) => void;
   usuarioEditando?: Usuario | null;
   cancelEdit?: () => void;
 }
@@ -39,7 +37,7 @@ export function UsuarioForm({ onSave, usuarioEditando, cancelEdit }: Props) {
     if (usuarioEditando) {
       setNome(usuarioEditando.nome);
       setEmail(usuarioEditando.email);
-      setSenha("");
+      setSenha(""); // senha não é preenchida ao editar
     } else {
       setNome("");
       setEmail("");
@@ -49,11 +47,15 @@ export function UsuarioForm({ onSave, usuarioEditando, cancelEdit }: Props) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const payload: Omit<Usuario, 'id' | 'data_criacao' | 'senha'> & { senha?: string } = { nome, email };
+
+    const payload: Omit<Usuario, "_id" | "data_criacao" | "senha"> & { senha?: string } = { nome, email };
+
+    // Adiciona senha apenas se estiver criando um novo usuário
     if (!usuarioEditando && senha) {
       payload.senha = senha;
     }
-    onSave(payload, usuarioEditando?.id);
+
+    onSave(payload, usuarioEditando?._id);
   }
 
   return (
