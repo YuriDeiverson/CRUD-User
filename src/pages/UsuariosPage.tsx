@@ -44,28 +44,33 @@ export default function UsuariosPage({ onLogout }: { onLogout: () => void }) {
   }
 
   async function handleSave(
-    payload: Omit<Usuario, "_id" | "data_criacao" | "senha"> & { senha?: string },
-    _id?: string
-  ) {
-    try {
-      if (_id) {
-        // Editar usuário
-        const res = await api.put(`/usuarios/${_id}`, payload);
-        setUsuarios((prev) => prev.map((u) => (u._id === _id ? res.data : u)));
-        alert("Usuário atualizado!");
-      } else {
-        // Criar novo usuário
-        const res = await api.post("/usuarios/register", payload);
-        setUsuarios((prev) => [...prev, res.data]);
-        alert("Usuário criado!");
-      }
-      setModalOpen(false);
-      setUsuarioEditando(null);
-    } catch (err: any) {
-      console.error(err);
-      if (err.response?.status === 409) alert("Usuário já existe.");
-      else alert("Erro ao salvar usuário.");
+  payload: Omit<Usuario, "_id" | "data_criacao" | "senha"> & { senha?: string },
+  _id?: string
+) {
+  try {
+    if (_id) {
+      // Edição
+      const res = await api.put(`/usuarios/${_id}`, payload);
+      console.log("Usuário atualizado:", res.data);
+
+      setUsuarios((prev) =>
+        prev.map((u) => (u._id === _id ? { ...u, ...res.data } : u))
+      );
+
+      alert("Usuário atualizado!");
+    } else {
+      // Criação
+      const res = await api.post("/usuarios/register", payload);
+      setUsuarios((prev) => [...prev, res.data]);
+      alert("Usuário criado!");
     }
+    setModalOpen(false);
+    setUsuarioEditando(null);
+  } catch (err: any) {
+    console.error("Erro ao salvar usuário:", err);
+    if (err.response?.status === 409) alert("Usuário já existe.");
+    else alert("Erro ao salvar usuário.");
+  }
   }
 
   // Filtra usuários pelo nome ou email (pesquisa)
