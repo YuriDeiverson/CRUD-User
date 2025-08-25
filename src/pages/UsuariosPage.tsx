@@ -21,13 +21,13 @@ export default function UsuariosPage({ onLogout }: UsuariosPageProps) {
   useEffect(() => {
     async function fetchUsuarios() {
       try {
-        const token = localStorage.getItem("token");
-        const response = await api.get("/usuarios", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        // ⚡ Aqui pegamos o array real dentro da propriedade `data`
-        setUsuarios(response.data.data);
+        const { data } = await api.get("/usuarios");
+        if (Array.isArray(data.data)) {
+          setUsuarios(data.data);
+        } else {
+          console.error("Resposta inválida:", data);
+          setError("Erro ao carregar usuários.");
+        }
       } catch (err) {
         console.error(err);
         setError("Erro ao carregar usuários.");
@@ -42,10 +42,7 @@ export default function UsuariosPage({ onLogout }: UsuariosPageProps) {
     if (!confirm("Tem certeza que deseja deletar este usuário?")) return;
 
     try {
-      const token = localStorage.getItem("token");
-      await api.delete(`/usuarios/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/usuarios/${id}`);
       setUsuarios(prev => prev.filter(u => u.id !== id));
     } catch (err) {
       console.error(err);
@@ -53,63 +50,87 @@ export default function UsuariosPage({ onLogout }: UsuariosPageProps) {
     }
   }
 
+  // Função para criar usuário
+  function handleCreate() {
+    const nome = prompt("Digite o nome do usuário:");
+    const email = prompt("Digite o e-mail do usuário:");
+    const senha = prompt("Digite a senha do usuário:");
+    if (!nome || !email || !senha) return;
+
+    api.post("/usuarios/register", { nome, email, senha })
+      .then(res => {
+        alert("Usuário criado com sucesso!");
+        setUsuarios(prev => [...prev, res.data]);
+      })
+      .catch(err => {
+        console.error(err);
+        if (err.response?.status === 409) {
+          alert("Usuário já existe.");
+        } else {
+          alert("Erro ao criar usuário.");
+        }
+      });
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100 p-6 font-sans">
-      <header className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800">Painel de Usuários</h1>
-        <button
-          onClick={onLogout}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
-        >
-          Logout
-        </button>
+    <div className="min-h-screen bg-slate-50 p-6 font-sans">
+      {/* Cabeçalho */}
+      <header className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-slate-800">Painel de Usuários</h1>
+        <div className="flex gap-2">
+          <button
+            onClick={handleCreate}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+          >
+            Criar Novo Usuário
+          </button>
+          <button
+            onClick={onLogout}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+          >
+            Logout
+          </button>
+        </div>
       </header>
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
-      <div className="bg-white shadow-lg rounded-xl overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="p-4">ID</th>
-              <th className="p-4">Nome</th>
-              <th className="p-4">Email</th>
-              <th className="p-4">Data de Criação</th>
-              <th className="p-4">Ações</th>
+      {/* Tabela de usuários */}
+      <table className="w-full bg-white shadow-xl rounded-2xl overflow-hidden">
+        <thead className="bg-slate-100 text-left">
+          <tr>
+            <th className="p-4">ID</th>
+            <th className="p-4">Nome</th>
+            <th className="p-4">Email</th>
+            <th className="p-4">Data de Criação</th>
+            <th className="p-4">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {usuarios.map(usuario => (
+            <tr key={usuario.id} className="border-t border-slate-200">
+              <td className="p-4">{usuario.id}</td>
+              <td className="p-4">{usuario.nome}</td>
+              <td className="p-4">{usuario.email}</td>
+              <td className="p-4">{usuario.data_criacao || "-"}</td>
+              <td className="p-4 space-x-2">
+                <button
+                  onClick={() => alert("Editar funcionalidade ainda não implementada")}
+                  className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={() => handleDelete(usuario.id)}
+                  className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
+                >
+                  Deletar
+                </button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {usuarios.map(usuario => (
-              <tr key={usuario.id} className="border-t border-gray-200 hover:bg-gray-50 transition">
-                <td className="p-4">{usuario.id}</td>
-                <td className="p-4">{usuario.nome}</td>
-                <td className="p-4">{usuario.email}</td>
-                <td className="p-4">{usuario.data_criacao || "-"}</td>
-                <td className="p-4 space-x-2">
-                  <button
-                    onClick={() => alert("Editar funcionalidade ainda não implementada")}
-                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(usuario.id)}
-                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
-                  >
-                    Deletar
-                  </button>
-                  <button
-                    onClick={() => alert("Funcionalidade criar novo usuário")}
-                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition"
-                  >
-                    Novo Usuário
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
