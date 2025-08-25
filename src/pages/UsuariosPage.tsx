@@ -50,12 +50,9 @@ export default function UsuariosPage({ onLogout }: { onLogout: () => void }) {
   try {
     if (_id) {
       // Edição
-      const res = await api.put(`/usuarios/${_id}`, payload);
-      console.log("Usuário atualizado:", res.data);
-
-      setUsuarios((prev) =>
-        prev.map((u) => (u._id === _id ? { ...u, ...res.data } : u))
-      );
+      await api.put(`/usuarios/${_id}`, payload);
+      // Recarrega toda a lista atualizada do backend
+      await fetchUsuarios();
 
       alert("Usuário atualizado!");
     } else {
@@ -71,7 +68,8 @@ export default function UsuariosPage({ onLogout }: { onLogout: () => void }) {
     if (err.response?.status === 409) alert("Usuário já existe.");
     else alert("Erro ao salvar usuário.");
   }
-  }
+}
+
 
   // Filtra usuários pelo nome ou email (pesquisa)
   const usuariosFiltrados = usuarios.filter(
