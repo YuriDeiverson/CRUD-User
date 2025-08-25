@@ -1,6 +1,6 @@
 // frontend/src/pages/UsuariosPage.tsx
 
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import api from '../services/api';
 import { Modal } from '../components/Modal';
 import { UsuarioForm } from '../components/UsuarioForm';
