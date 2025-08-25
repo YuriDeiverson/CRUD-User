@@ -3,23 +3,26 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { ArrowRightIcon } from '@heroicons/react/24/solid';
 
-export default function LoginPage() {
+interface LoginPageProps {
+  onLogin: (token: string) => void;
+}
+
+export default function LoginPage({ onLogin }: LoginPageProps) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    try {
-      const { data } = await api.post("/usuarios/login", { email, senha });
-      localStorage.setItem("token", data.token);
-      navigate("/usuarios");
-    } catch {
-      setError("Credenciais inválidas. Verifique seu e-mail e senha.");
-    }
+  e.preventDefault();
+  setError("");
+  try {
+    const { data } = await api.post("/usuarios/login", { email, senha });
+    onLogin(data.token); // ⚡ atualiza estado no App
+  } catch {
+    setError("Credenciais inválidas. Verifique seu e-mail e senha.");
   }
+}
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 font-sans">
