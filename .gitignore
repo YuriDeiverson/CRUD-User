@@ -1,47 +1,24 @@
-# Logs
-logs
-*.log
+# Dependências
+/node_modules
+
+# Ficheiros de build
+/dist
+/build
+
+# Ficheiros de log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-
-# Node modules
-node_modules/
-
-# Build outputs
-dist/
-build/
-
-# Vite/TypeScript
-.vite/
-.vscode/
-*.tsbuildinfo
-
-
-# dotenv environment variables
+# Ficheiros de ambiente (MUITO IMPORTANTE PARA A SEGURANÇA)
 .env
 .env.local
-.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# System files
+# Ficheiros do editor e do sistema
+.vscode/
+.idea/
 .DS_Store
-Thumbs.db

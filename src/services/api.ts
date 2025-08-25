@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:3000" // URL base do backend
+  baseURL: "https://crud-user-api-pi.vercel.app", // URL base do backend
 });
 
 // Interceptor que adiciona o token a cada requisição autenticada
