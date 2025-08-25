@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage"; // 👈 novo
 import UsuariosPage from "./pages/UsuariosPage";
 import type { ReactNode } from "react";
 
@@ -13,6 +14,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} /> {/* 👈 novo */}
         <Route
           path="/usuarios"
           element={

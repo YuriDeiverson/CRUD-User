@@ -1,8 +1,6 @@
-// frontend/src/pages/LoginPage.tsx
-
 import { useState } from "react";
-import api from "../services/api";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 import { ArrowRightIcon } from '@heroicons/react/24/solid';
 
 export default function LoginPage() {
@@ -78,6 +76,15 @@ export default function LoginPage() {
           >
             Entrar
             <ArrowRightIcon className="h-5 w-5 transform group-hover:translate-x-1 transition-transform" />
+          </button>
+
+          {/* Botão pequeno para registro */}
+          <button
+            type="button"
+            onClick={() => navigate("/register")}
+            className="mt-2 w-full text-xs text-blue-600 hover:underline focus:outline-none"
+          >
+            Criar uma conta
           </button>
         </form>
       </div>
