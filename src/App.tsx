@@ -9,9 +9,13 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={token ? <Navigate to="/usuarios" /> : <LoginPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        {/* Rota inicial: se tiver token vai para usuários, senão vai para login */}
+        <Route path="/" element={token ? <Navigate to="/usuarios" /> : <Navigate to="/login" />} />
+        
+        <Route path="/login" element={token ? <Navigate to="/usuarios" /> : <LoginPage />} />
+        <Route path="/register" element={token ? <Navigate to="/usuarios" /> : <RegisterPage />} />
+
+        {/* Rota protegida */}
         <Route path="/usuarios" element={token ? <UsuariosPage /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
