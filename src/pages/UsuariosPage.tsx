@@ -7,7 +7,7 @@ import type { Usuario } from "../types/Usuario";
 
 export default function UsuariosPage({ onLogout }: { onLogout: () => void }) {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string>("");
   const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -31,7 +31,7 @@ export default function UsuariosPage({ onLogout }: { onLogout: () => void }) {
     if (!id || !confirm("Deseja deletar este usuário?")) return;
     try {
       await api.delete(`/usuarios/${id}`);
-      setUsuarios(prev => prev.filter(u => u._id !== id));
+      setUsuarios((prev) => prev.filter((u) => u._id !== id));
     } catch (err) {
       console.error(err);
       alert("Erro ao deletar usuário.");
@@ -49,12 +49,14 @@ export default function UsuariosPage({ onLogout }: { onLogout: () => void }) {
   ) {
     try {
       if (_id) {
+        // Editar usuário
         const res = await api.put(`/usuarios/${_id}`, payload);
-        setUsuarios(prev => prev.map(u => (u._id === _id ? res.data : u)));
+        setUsuarios((prev) => prev.map((u) => (u._id === _id ? res.data : u)));
         alert("Usuário atualizado!");
       } else {
+        // Criar novo usuário
         const res = await api.post("/usuarios/register", payload);
-        setUsuarios(prev => [...prev, res.data]);
+        setUsuarios((prev) => [...prev, res.data]);
         alert("Usuário criado!");
       }
       setModalOpen(false);
@@ -66,10 +68,11 @@ export default function UsuariosPage({ onLogout }: { onLogout: () => void }) {
     }
   }
 
-  // Filtragem simples por nome ou email
-  const usuariosFiltrados = usuarios.filter(u =>
-    u.nome.toLowerCase().includes(search.toLowerCase()) ||
-    u.email.toLowerCase().includes(search.toLowerCase())
+  // Filtra usuários pelo nome ou email (pesquisa)
+  const usuariosFiltrados = usuarios.filter(
+    (u) =>
+      u.nome.toLowerCase().includes(search.toLowerCase()) ||
+      u.email.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -95,42 +98,20 @@ export default function UsuariosPage({ onLogout }: { onLogout: () => void }) {
         </div>
       </header>
 
-      {/* Barra de busca + botão Adicionar */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4">
         <input
           type="text"
           placeholder="Pesquisar por nome ou e-mail..."
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           className="w-full max-w-xl px-4 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <button
-          onClick={() => {
-            setUsuarioEditando(null);
-            setModalOpen(true);
-          }}
-          className="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center shadow"
-        >
-          <span className="text-xl mr-2">+</span> Adicionar Usuário
-        </button>
       </div>
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
-      <UsuarioTable
-        usuarios={usuariosFiltrados}
-        onEditar={handleEdit}
-        onDeletar={handleDelete}
-      />
+      <UsuarioTable usuarios={usuariosFiltrados} onEditar={handleEdit} onDeletar={handleDelete} />
 
-      {/* Paginação (exemplo estático, para simular o visual) */}
-      <div className="flex justify-center mt-4 gap-2">
-        <button className="px-4 py-1 border rounded hover:bg-slate-100 text-sm">Anterior</button>
-        <span className="px-4 py-1 text-slate-600 text-sm">Página 2</span>
-        <button className="px-4 py-1 border rounded hover:bg-slate-100 text-sm">Próxima</button>
-      </div>
-
-      {/* Modal */}
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
