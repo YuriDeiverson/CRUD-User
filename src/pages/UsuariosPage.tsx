@@ -1,118 +1,112 @@
-import { useState, useEffect } from 'react';
-import api from '../services/api';
-import { Modal } from '../components/Modal';
-import { UsuarioForm } from '../components/UsuarioForm';
-import { UsuarioTable } from '../components/UsuarioTable';
-import type { Usuario } from '../types/Usuario';
-import { PlusIcon } from '@heroicons/react/24/solid';
+// frontend/src/pages/UsuariosPage.tsx
+import { useEffect, useState } from "react";
+import api from "../services/api";
 
-function UsuariosPage() {
+interface Usuario {
+  id: number;
+  nome: string;
+  email: string;
+  data_criacao?: string;
+}
+
+interface UsuariosPageProps {
+  onLogout: () => void;
+}
+
+export default function UsuariosPage({ onLogout }: UsuariosPageProps) {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
-  const [filter, setFilter] = useState('');
-  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
 
-  const carregarUsuarios = () => {
-    api.get(`/usuarios?page=${page}&q=${filter}`)
-      .then(response => {
-        setUsuarios(response.data.data);
-      })
-      .catch(error => console.error("Falha ao buscar usuários:", error));
-  };
-
+  // Carregar usuários ao iniciar a página
   useEffect(() => {
-    carregarUsuarios();
-  }, [page, filter]);
-
-  const handleSaveUser = (novoUsuario: Omit<Usuario, '_id' | 'data_criacao'>, _id?: string) => {
-    const promise = _id
-      ? api.put(`/usuarios/${_id}`, novoUsuario)
-      : api.post('/usuarios/register', novoUsuario);
-
-    promise.then(() => {
-        setIsModalOpen(false);
-        setUsuarioEditando(null);
-        carregarUsuarios();
-      })
-      .catch(error => console.error("Erro ao salvar usuário:", error));
-  };
-  
-  const handleEdit = (usuario: Usuario) => {
-    setUsuarioEditando(usuario);
-    setIsModalOpen(true);
-  };
-  
-  const handleDelete = (_id?: string) => {
-    if (_id && window.confirm('Tem certeza que deseja remover este usuário? Esta ação é irreversível.')) {
-      api.delete(`/usuarios/${_id}`).then(() => {
-        carregarUsuarios();
-      });
+    async function fetchUsuarios() {
+      try {
+        const token = localStorage.getItem("token");
+        const { data } = await api.get("/usuarios", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUsuarios(data);
+      } catch (err) {
+        console.error(err);
+        setError("Erro ao carregar usuários.");
+      } finally {
+        setLoading(false);
+      }
     }
-  };
+
+    fetchUsuarios();
+  }, []);
+
+  // Função para deletar usuário
+  async function handleDelete(id: number) {
+    if (!confirm("Tem certeza que deseja deletar este usuário?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await api.delete(`/usuarios/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUsuarios(prev => prev.filter(u => u.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao deletar usuário.");
+    }
+  }
 
   return (
-    <div className="bg-slate-50 min-h-screen font-sans">
-      <header className="bg-white shadow-sm sticky top-0 z-10 border-b border-slate-200">
-        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-            <h1 className="text-2xl font-bold text-slate-900">
-                Painel de Usuários
-            </h1>
-        </div>
+    <div className="min-h-screen bg-slate-50 p-6 font-sans">
+      <header className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-slate-800">Painel de Usuários</h1>
+        <button
+          onClick={onLogout}
+          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+        >
+          Logout
+        </button>
       </header>
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="bg-white p-4 rounded-xl shadow-lg mb-8 flex flex-col md:flex-row items-center gap-4">
-          <div className="relative flex-grow w-full">
-            <input 
-              type="text" 
-              value={filter} 
-              onChange={e => setFilter(e.target.value)} 
-              placeholder="Pesquisar por nome ou e-mail..."
-              className="w-full p-3 pl-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
-            />
-          </div>
-          <button 
-            onClick={() => { setUsuarioEditando(null); setIsModalOpen(true); }}
-            className="w-full md:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white font-bold px-5 py-3 rounded-lg hover:shadow-lg hover:bg-blue-700 transition-all duration-300"
-          >
-            <PlusIcon className="h-5 w-5" />
-            Adicionar Usuário
-          </button>
-        </div>
 
-        <UsuarioTable usuarios={usuarios} onEditar={handleEdit} onDeletar={handleDelete} />
-
-        <div className="mt-8 flex justify-center items-center gap-4">
-          <button 
-            onClick={() => setPage(p => Math.max(p - 1, 1))} 
-            disabled={page === 1}
-            className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Anterior
-          </button>
-          <span className="text-sm font-semibold text-slate-600">Página {page}</span>
-          <button 
-            onClick={() => setPage(p => p + 1)}
-            className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors"
-          >
-            Próxima
-          </button>
-        </div>
-      </main>
-
-      <Modal 
-        open={isModalOpen} 
-        onClose={() => { setIsModalOpen(false); setUsuarioEditando(null); }} 
-        title={usuarioEditando ? "Editar Usuário" : "Criar Novo Usuário"}
-      >
-        <UsuarioForm 
-          onSave={handleSaveUser} 
-          usuarioEditando={usuarioEditando} 
-          cancelEdit={() => { setIsModalOpen(false); setUsuarioEditando(null); }} 
-        />
-      </Modal>
+      {loading ? (
+        <p>Carregando usuários...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : (
+        <table className="w-full bg-white shadow-xl rounded-2xl overflow-hidden">
+          <thead className="bg-slate-100 text-left">
+            <tr>
+              <th className="p-4">ID</th>
+              <th className="p-4">Nome</th>
+              <th className="p-4">Email</th>
+              <th className="p-4">Data de Criação</th>
+              <th className="p-4">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {usuarios.map(usuario => (
+              <tr key={usuario.id} className="border-t border-slate-200">
+                <td className="p-4">{usuario.id}</td>
+                <td className="p-4">{usuario.nome}</td>
+                <td className="p-4">{usuario.email}</td>
+                <td className="p-4">{usuario.data_criacao || "-"}</td>
+                <td className="p-4 space-x-2">
+                  <button
+                    onClick={() => alert("Editar funcionalidade ainda não implementada")}
+                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(usuario.id)}
+                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
+                  >
+                    Deletar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
-
-export default UsuariosPage;
